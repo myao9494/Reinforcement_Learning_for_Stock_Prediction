@@ -1,17 +1,18 @@
 from agent.agent import Agent
 from functions import *
 import sys
-
+import datetime
 
 from keras.callbacks import TensorBoard, EarlyStopping
-
+time_list = []
+first_time = datetime.datetime.now()
 try:
 	if len(sys.argv) != 4:
 		print ("Usage: python train.py [stock] [window] [episodes]")
 		exit()
 
 	stock_name, window_size, episode_count = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-
+	# stock_name, window_size, episode_count = 'GSPC', 30, 10
 	agent = Agent(window_size)
 	data = getStockDataVec(stock_name)
 	l = len(data) - 1
@@ -33,13 +34,13 @@ try:
 
 			if action == 1: # buy
 				agent.inventory.append(data[t])
-				print ("Buy: " + formatPrice(data[t]))
+				# print ("Buy: " + formatPrice(data[t]))
 
 			elif action == 2 and len(agent.inventory) > 0: # sell
 				bought_price = agent.inventory.pop(0)
 				reward = max(data[t] - bought_price, 0)
 				total_profit += data[t] - bought_price
-				print ("Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
+				# print ("Sell: " + formatPrice(data[t]) + " | Profit: " + formatPrice(data[t] - bought_price))
 
 			done = True if t == l - 1 else False
 			agent.memory.append((state, action, reward, next_state, done))
@@ -49,6 +50,11 @@ try:
 				print ("--------------------------------")
 				print ("Total Profit: " + formatPrice(total_profit))
 				print ("--------------------------------")
+				last_time = datetime.datetime.now()
+				delta = last_time - first_time
+				time_list.append(delta)
+				print(delta.total_seconds())
+				first_time = datetime.datetime.now()
 
 			if len(agent.memory) > batch_size:
 				agent.expReplay(batch_size)
@@ -58,4 +64,5 @@ try:
 except Exception as e:
 	print("Error occured: {0}".format(e))
 finally:
+	print(time_list)
 	exit()

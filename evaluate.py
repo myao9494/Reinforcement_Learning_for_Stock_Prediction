@@ -17,6 +17,7 @@ try:
 		exit()
 
 	stock_name, model_name = sys.argv[1], sys.argv[2]
+	# stock_name, model_name = 'GSPC' ,'model_ep10'
 	model = load_model("models/" + model_name)
 	window_size = model.layers[0].input.shape.as_list()[1]
 
